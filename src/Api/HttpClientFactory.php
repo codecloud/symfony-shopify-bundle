@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class HttpClientFactory implements HttpClientFactoryInterface
 {
-    public function createHttpClient($storeName, $credentials)
+    public function createHttpClient($storeName, AppCredentialsInterface $credentials)
     {
         $handlers = HandlerStack::create();
         $handlers->push(Middleware::retry(

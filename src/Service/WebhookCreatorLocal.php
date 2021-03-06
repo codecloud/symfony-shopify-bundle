@@ -8,15 +8,10 @@ use GuzzleHttp\Exception\ClientException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * Creates Webhooks.
+ * Creates Webhooks to be received by this application.
  */
-class WebhookCreator implements WebhookCreatorInterface
+class WebhookCreatorLocal extends AbstractWebhookCreator
 {
-    /**
-     * @var ShopifyApiFactory
-     */
-    private $apis;
-
     /**
      * @var UrlGeneratorInterface
      */
@@ -28,8 +23,9 @@ class WebhookCreator implements WebhookCreatorInterface
      */
     public function __construct(ShopifyApiFactory $apis, UrlGeneratorInterface $router)
     {
-        $this->apis = $apis;
         $this->router = $router;
+
+        parent::__construct($apis);
     }
 
     /**
@@ -54,37 +50,7 @@ class WebhookCreator implements WebhookCreatorInterface
                 'format' => 'json',
             ]);
 
-            try {
-                $api->Webhook->create($webhook);
-            } catch (ClientException $e) {
-                if ($e->getResponse()->getStatusCode() == 422) {
-                    continue;
-                }
-
-                throw $e;
-            }
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function listWebhooks(string $storeName)
-    {
-        $api = $this->apis->getForStore($storeName);
-
-        return $api->Webhook->findAll();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteAllWebhooks(string $storeName)
-    {
-        $api = $this->apis->getForStore($storeName);
-
-        foreach ($api->Webhook->findAll() as $webhook) {
-            $api->Webhook->delete($webhook['id']);
+            $api->Webhook->create($webhook);
         }
     }
 }

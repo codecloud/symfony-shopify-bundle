@@ -2,20 +2,16 @@
 
 namespace CodeCloud\Bundle\ShopifyBundle\Security;
 
-use CodeCloud\Bundle\ShopifyBundle\EventListener\SessionAuthenticationListener;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-/**
- * Authenticates users via session parameter.
- */
 class SessionAuthenticator extends AbstractGuardAuthenticator
 {
     /**
@@ -23,32 +19,31 @@ class SessionAuthenticator extends AbstractGuardAuthenticator
      */
     private $urlGenerator;
 
-    /**
-     * @param UrlGeneratorInterface $urlGenerator
-     */
     public function __construct(UrlGeneratorInterface $urlGenerator)
     {
         $this->urlGenerator = $urlGenerator;
     }
 
+    public function supports(Request $request)
+    {
+        return (bool) $this->getSessionId($request);
+    }
+
+    private function getSessionId(Request $request)
+    {
+        return $request->query->get('shopify_session_id', $request->get('shopify_session_id'));
+    }
+
     public function getCredentials(Request $request)
     {
-        if (!$session = $request->getSession()) {
-            return false;
-        }
-
-        if (!$session->has(SessionAuthenticationListener::SESSION_PARAMETER)) {
-            return false;
-        }
-
         return [
-            'shop' => $session->get(SessionAuthenticationListener::SESSION_PARAMETER),
+            'shopify_session_id' => $this->getSessionId($request),
         ];
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        return $userProvider->loadUserByUsername($credentials['shop']);
+        return $userProvider->loadUserByUsername($credentials['shopify_session_id']);
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -58,10 +53,12 @@ class SessionAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
+        return null;
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey)
     {
+        return null;
     }
 
     public function supportsRememberMe()

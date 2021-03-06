@@ -45,4 +45,8 @@ interface ShopifyStoreManagerInterface
      * @param string $nonce
      */
     public function authenticateStore($storeName, $accessToken, $nonce);
+
+    public function authenticateSession(Session $session);
+
+    public function findStoreNameBySession(string $sessionId): ?string;
 }

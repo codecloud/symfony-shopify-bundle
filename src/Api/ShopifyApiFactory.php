@@ -45,8 +45,14 @@ class ShopifyApiFactory
      */
     public function getForStore($storeName)
     {
-        $accessToken = $this->storeManager->getAccessToken($storeName);
-        $client = $this->httpClientFactory->createHttpClient($storeName, new PublicAppCredentials($accessToken));
+        if ($this->storeManager instanceof CredentialsResolverInterface) {
+            $credentials = $this->storeManager->getCredentials($storeName);
+        } else {
+            $accessToken = $this->storeManager->getAccessToken($storeName);
+            $credentials = new PublicAppCredentials($accessToken);
+        }
+
+        $client = $this->httpClientFactory->createHttpClient($storeName, $credentials);
 
         return new ShopifyApi($client, $this->apiVersion);
     }

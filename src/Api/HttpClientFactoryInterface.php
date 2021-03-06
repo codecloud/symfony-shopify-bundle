@@ -12,8 +12,8 @@ interface HttpClientFactoryInterface
 {
     /**
      * @param string $storeName
-     * @param PrivateAppCredentials|PublicAppCredentials $credentials
+     * @param AppCredentialsInterface $credentials
      * @return ClientInterface
      */
-    public function createHttpClient($storeName, $credentials);
+    public function createHttpClient($storeName, AppCredentialsInterface $credentials);
 }

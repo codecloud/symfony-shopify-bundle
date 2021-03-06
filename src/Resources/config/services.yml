@@ -1,89 +1,45 @@
 services:
-  codecloud_shopify.store_manager:
-      synthetic: true
-      alias: ~ # this is configured via bundle extension
+  _defaults:
+    autowire: true
+    autoconfigure: true
 
-  codecloud_shopify.controller.oauth:
-      class: CodeCloud\Bundle\ShopifyBundle\Controller\OAuthController
-      arguments:
-          - "@router"
-          - "%codecloud_shopify.oauth%"
-          - "@codecloud_shopify.http.client"
-          - "@codecloud_shopify.store_manager"
-          - "@event_dispatcher"
-          - "@codecloud_shopify.signer"
+  CodeCloud\Bundle\ShopifyBundle\:
+    resource: '../../*'
+    exclude: '../../{DependencyInjection,Tests,*.Bundle.php}'
 
-  codecloud_shopify.controller.webhooks:
-      class: CodeCloud\Bundle\ShopifyBundle\Controller\WebhookController
-      arguments:
-          - "@codecloud_shopify.store_manager"
-          - "@event_dispatcher"
+  CodeCloud\Bundle\ShopifyBundle\Controller\:
+    resource: '../../Controller/'
+    tags: ['controller.service_arguments']
 
-  codecloud_shopify.command.webhooks:
-      class: CodeCloud\Bundle\ShopifyBundle\Command\WebhooksCommand
-      arguments:
-          - "@codecloud_shopify.webhook_creator"
-          - "@codecloud_shopify.store_manager"
-          - "%codecloud_shopify.webhooks%"
-      tags:
-          - { name: console.command }
+  CodeCloud\Bundle\ShopifyBundle\Controller\OAuthController:
+    public: true
+    arguments:
+      $config: "%codecloud_shopify.oauth%"
 
-  codecloud_shopify.listener.webhooks_logger:
-      class: CodeCloud\Bundle\ShopifyBundle\EventListener\WebhookLoggerListener
-      arguments:
-          - "@logger"
-      tags:
-          - { name: kernel.event_subscriber }
+  CodeCloud\Bundle\ShopifyBundle\Controller\JwtController:
+    public: true
+    arguments:
+      $redirectRoute: "%codecloud_shopify.oauth.redirect_route%"
 
-  codecloud_shopify.http.client:
-      class: GuzzleHttp\Client
+  CodeCloud\Bundle\ShopifyBundle\Command\WebhooksCommand:
+    arguments:
+      $topics: "%codecloud_shopify.webhooks%"
+    tags:
+      - { name: console.command }
 
-  codecloud_shopify.http.client_factory:
-      public: false
-      class: CodeCloud\Bundle\ShopifyBundle\Api\HttpClientFactory
+  CodeCloud\Bundle\ShopifyBundle\Api\ShopifyApiFactory:
+    arguments:
+      $apiVersion: "%codecloud_shopify.api_version%"
 
-  codecloud_shopify.shopify_api_factory:
-      class: CodeCloud\Bundle\ShopifyBundle\Api\ShopifyApiFactory
-      arguments:
-          - "@codecloud_shopify.store_manager"
-          - "@codecloud_shopify.http.client_factory"
-          - "%codecloud_shopify.api_version%"
+  CodeCloud\Bundle\ShopifyBundle\Security\HmacSignature:
+    arguments:
+      $sharedSecret: "%codecloud_shopify.oauth.shared_secret%"
 
-  codecloud_shopify.signer:
-      public: false
-      class: CodeCloud\Bundle\ShopifyBundle\Security\HmacSignature
-      arguments:
-          - "%codecloud_shopify.oauth.shared_secret%"
+  CodeCloud\Bundle\ShopifyBundle\Service\WebhookCreatorRemote:
+    arguments:
+      $webhookUrl: '%codecloud_shopify.webhook_url%'
 
-  codecloud_shopify.security.session_authenticator:
-      public: false
-      class: CodeCloud\Bundle\ShopifyBundle\Security\SessionAuthenticator
-      arguments:
-          - "@router"
-
-  codecloud_shopify.security.admin_user_provider:
-      public: false
-      class: CodeCloud\Bundle\ShopifyBundle\Security\ShopifyAdminUserProvider
-      arguments:
-          - "@codecloud_shopify.store_manager"
-
-  codecloud_shopify.twig_extension:
-      class: CodeCloud\Bundle\ShopifyBundle\Twig\Extension\ShopifyStore
-      arguments:
-          - "@codecloud_shopify.signer"
-          - "@security.token_storage"
-      tags:
-          - { name: twig.extension }
-
-  codecloud_shopify.webhook_creator:
-      class: CodeCloud\Bundle\ShopifyBundle\Service\WebhookCreator
-      arguments:
-          - "@codecloud_shopify.shopify_api_factory"
-          - "@router"
-
-  codecloud_shopify.listener.session_authentication:
-      class: CodeCloud\Bundle\ShopifyBundle\EventListener\SessionAuthenticationListener
-      arguments:
-          - "@request_stack"
-      tags:
-          - { name: kernel.event_subscriber }
+  CodeCloud\Bundle\ShopifyBundle\Service\JwtResolver:
+    arguments:
+      - '%codecloud_shopify.oauth.api_key%'
+      - '%codecloud_shopify.oauth.shared_secret%'

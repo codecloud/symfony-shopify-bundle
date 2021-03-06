@@ -6,7 +6,7 @@ namespace CodeCloud\Bundle\ShopifyBundle\Api;
  * Shopify Credentials used by Public Apps.
  * You generally obtain these via OAUTH handshake.
  */
-class PublicAppCredentials
+class PublicAppCredentials implements AppCredentialsInterface
 {
     /**
      * @var string

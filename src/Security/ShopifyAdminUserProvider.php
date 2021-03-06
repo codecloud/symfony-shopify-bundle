@@ -17,20 +17,29 @@ class ShopifyAdminUserProvider implements UserProviderInterface
     private $storeManager;
 
     /**
-     * @param ShopifyStoreManagerInterface $storeManager
+     * @var string
      */
+    private $devStore;
+
     public function __construct(ShopifyStoreManagerInterface $storeManager)
     {
         $this->storeManager = $storeManager;
     }
 
-    public function loadUserByUsername($username)
+    public function setDevStore(string $devStore)
     {
-        if (!$this->storeManager->storeExists($username)) {
+        $this->devStore = $devStore;
+    }
+
+    public function loadUserByUsername($sessionId)
+    {
+        $storeName = $this->devStore ?? $this->storeManager->findStoreNameBySession($sessionId);
+
+        if (!$storeName) {
             throw new UsernameNotFoundException();
         }
 
-        return new ShopifyAdminUser($username, [self::ROLE_SHOPIFY_ADMIN]);
+        return new ShopifyAdminUser($storeName, [self::ROLE_SHOPIFY_ADMIN]);
     }
 
     public function refreshUser(UserInterface $user)
@@ -40,6 +49,6 @@ class ShopifyAdminUserProvider implements UserProviderInterface
 
     public function supportsClass($class)
     {
-        return $class instanceof ShopifyAdminUser;
+        return is_a($class, ShopifyAdminUser::class, true);
     }
 }

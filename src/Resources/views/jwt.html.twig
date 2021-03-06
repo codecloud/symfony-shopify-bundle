@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Shopify ShipStation{% endblock %}</title>
+    <script src="https://unpkg.com/@shopify/app-bridge"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils"></script>
+    <script>
+        var AppBridge = window['app-bridge'];
+        var createApp = AppBridge.default;
+        var app = createApp({
+            apiKey: '{{ shopify_api_key }}',
+            shopOrigin: '{{ shop }}'
+        });
+        var Utils = window['app-bridge-utils'];
+        Utils.getSessionToken(app)
+            .then(function(token) {
+                document.getElementById('jwt-input').value = token;
+                document.getElementById('login-form').submit();
+            })
+            .catch(function(err) {
+                console.log(err)
+            });
+    </script>
+</head>
+<body>
+<form id="login-form" action="" method="post">
+    <input type="hidden" id="jwt-input" name="jwt" value="" />
+</form>
+</body>
+</html>

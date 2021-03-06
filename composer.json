@@ -15,8 +15,9 @@
   ],
   "require": {
     "php": ">=7.0.0",
-    "symfony/framework-bundle": "^3.0",
-    "guzzlehttp/guzzle": "^6.3"
+    "symfony/framework-bundle": "^5.0",
+    "symfony/http-client": "^5.0",
+    "firebase/php-jwt": "^5.2"
   },
   "autoload": {
     "psr-4": {

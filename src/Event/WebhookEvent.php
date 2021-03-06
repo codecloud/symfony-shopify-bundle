@@ -2,7 +2,7 @@
 
 namespace CodeCloud\Bundle\ShopifyBundle\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class WebhookEvent extends Event
 {
